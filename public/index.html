@@ -79,8 +79,8 @@ class WSClient{
 
     _map_handlers() {
         this.handlers = {
-            'public_id': this.on_public_id,
-            'pong': this.on_pong
+            'public_id': (d)=>{this.on_public_id(d)},
+            'pong': (d)=>{this.on_pong(d)}
         }
     }
 
