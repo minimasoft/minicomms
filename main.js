@@ -47,9 +47,6 @@ function pipeStreamOverResponse(res, readStream, totalSize) {
 
           /* Register async handlers for drainage */
           res.onWritable((offset) => {
-            /* Here the timeout is off, we can spend as much time before calling tryEnd we want to */
-
-            /* On failure the timeout will start */
             let [ok, done] = res.tryEnd(
               res.ab.slice(offset - res.abOffset),
               totalSize
@@ -57,33 +54,24 @@ function pipeStreamOverResponse(res, readStream, totalSize) {
             if (done) {
               onAbortedOrFinishedResponse(res, readStream);
             } else if (ok) {
-              /* We sent a chunk and it was not the last one, so let's resume reading.
-               * Timeout is still disabled, so we can spend any amount of time waiting
-               * for more chunks to send. */
               readStream.resume();
             }
-
-            /* We always have to return true/false in onWritable.
-             * If you did not send anything, return true for success. */
             return ok;
           });
         }
       });
     })
     .on("error", () => {
-      /* Todo: handle errors of the stream, probably good to simply close the response */
       console.log(
-        "Unhandled read error from Node.js, you need to handle this!"
+        "Unhandled read error from Node.js, someone needs to handle this!"
       );
     });
 
-  /* If you plan to asyncronously respond later on, you MUST listen to onAborted BEFORE returning */
   res.onAborted(() => {
     onAbortedOrFinishedResponse(res, readStream);
   });
 }
 
-/* Yes, you can easily swap to SSL streaming by uncommenting here */
 const app = uWS
   ./*SSL*/ App({
     key_file_name: "misc/key.pem",
@@ -97,10 +85,6 @@ const app = uWS
     pipeStreamOverResponse(res, readStream, totalSize);
   })
   .get("/file/:hash", (res, req) => {
-    /* Log */
-    //console.time(res.id = ++streamIndex);
-    //console.log('Stream was opened, openStreams: ' + ++openStreams);
-    /* Create read stream with Node.js and start streaming over Http */
     console.log(req.getParameter("hash"));
     //const readStream = fs.createReadStream(fileName);
     //pipeStreamOverResponse(res, readStream, totalSize);
