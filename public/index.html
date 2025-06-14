@@ -9,21 +9,26 @@
 <script>
 
 class WSClient{
-    constructor(ws){
-        this.ws = ws;
+    constructor(){
+        this.reconnect_timeout = 3000;
         this.priv_id = self.crypto.randomUUID();
+        this.connect();
+    }
+
+    connect(){
+        this.ws = new WebSocket(`ws://${window.location.host}/ws`);
         this._update_ready_state();
-        ws.addEventListener('open', (ev)=>{this.register()});
 
-        ws.addEventListener('message', (ev)=>{this.on_message(ev.data)});
-
-        ws.addEventListener('error', (ev) =>{
+        this.ws.addEventListener('open', (ev)=>{this.register()});
+        this.ws.addEventListener('message', (ev)=>{this.on_message(ev.data)});
+        this.ws.addEventListener('error', (ev) =>{
             this._update_ready_state();
             console.log(`error: ${JSON.stringify(ev)}`);
         });
-        ws.addEventListener('close', (ev) =>{
+        this.ws.addEventListener('close', (ev) =>{
             this._update_ready_state();
             console.log(`close: ${JSON.stringify(ev)}`);
+            setTimeout(() => {this.connect()}, this.reconnect_timeout);
         });
     }
 
@@ -81,8 +86,7 @@ class WSClient{
 }
 
 function main(){
-    const ws = new WebSocket(`ws://${window.location.host}/ws`);
-    const client = new WSClient(ws);
+    const client = new WSClient();
 }
 
 window.onload = main;
