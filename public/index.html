@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang=es>
+<head>
+<meta charset="UTF_8">
+<title>minicomms</title>
+<style>
+
+</style>
+<script>
+
+function pinga(ws){
+    ws.last_ping = performance.now();
+    const message = JSON.stringify({
+        i: 'test_id',
+        p: ws.last_ping
+    });
+    if (ws.readyState == ws.OPEN){
+        setTimeout(()=>{pinga(ws);}, 100-(performance.now()-ws.last_ping));
+        ws.send(message);
+    }
+}
+
+function main(){
+    const ws = new WebSocket(`ws://${window.location.host}/ws`);
+    ws.addEventListener('open', (ev) =>{
+        pinga(ws);
+    });
+    ws.addEventListener('message', (ev) =>{
+        let delay = performance.now() - ws.last_ping;
+        console.log(`receive: ${JSON.parse(ev.data)} delay:${delay}`);
+    });
+    ws.addEventListener('error', (ev) =>{
+        console.log(`error: ${JSON.stringify(ev)}`);
+    });
+    ws.addEventListener('close', (ev) =>{
+        console.log(`close: ${JSON.stringify(ev)}`);
+    });
+}
+window.onload = main;
+</script>
+</head>
+<body>
+<h1>Hello</h1>
+</body>
+</html>
