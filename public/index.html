@@ -12,6 +12,7 @@ class WSClient{
     constructor(){
         this.reconnect_timeout = 3000;
         this.priv_id = self.crypto.randomUUID();
+        this._map_handlers();
         this.connect();
     }
 
@@ -32,7 +33,7 @@ class WSClient{
         });
     }
 
-    _msg(cmd, data={}) {
+    send_msg(cmd, data={}) {
         this.ws.send(JSON.stringify({
             i: this.priv_id,
             c: cmd,
@@ -40,33 +41,17 @@ class WSClient{
         }));
     }
 
-    _update_ready_state() {
-        document.getElementById(
-            'div_ready_state'
-        ).innerHTML = `ready_state = ${this.ws.readyState}`;
-    }
-
     register() {
         this._update_ready_state();
-        this._msg('register');
+        this.send_msg('register');
     }
 
     pinga() {
         if (this.ws.readyState == this.ws.OPEN){
             setTimeout(()=>{this.pinga()}, 100);
             this.last_ping = performance.now();
-            this._msg('ping', {t: this.last_ping});
+            this.send_msg('ping', {t: this.last_ping});
         }
-    }
-
-    on_message(raw_msg) {
-        let msg = JSON.parse(raw_msg);
-        if (msg.c=='public_id')
-            this.on_public_id(msg.d);
-        else if (msg.c=='pong')
-            this.on_pong(msg.d);
-        else
-            console.log(`bad message ${raw_msg}`);
     }
 
     on_public_id(data) {
@@ -82,6 +67,28 @@ class WSClient{
         document.getElementById(
             'div_rtt'
         ).innerHTML = `rtt = ${rtt.toFixed(2)}`;
+    }
+
+    on_message(raw_msg) {
+        let msg = JSON.parse(raw_msg);
+        if (msg.c in this.handlers)
+            this.handlers[msg.c](msg.d);
+        else
+            console.log(`bad message ${raw_msg}`);
+    }
+
+    _map_handlers() {
+        this.handlers = {
+            'public_id': this.on_public_id,
+            'pong': this.on_pong
+        }
+    }
+
+
+    _update_ready_state() {
+        document.getElementById(
+            'div_ready_state'
+        ).innerHTML = `ready_state = ${this.ws.readyState}`;
     }
 }
 
