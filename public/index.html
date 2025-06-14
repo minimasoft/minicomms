@@ -12,15 +12,17 @@ class WSClient{
     constructor(ws){
         this.ws = ws;
         this.priv_id = self.crypto.randomUUID();
-
+        this._update_ready_state();
         ws.addEventListener('open', (ev)=>{this.register()});
 
         ws.addEventListener('message', (ev)=>{this.on_message(ev.data)});
 
         ws.addEventListener('error', (ev) =>{
+            this._update_ready_state();
             console.log(`error: ${JSON.stringify(ev)}`);
         });
         ws.addEventListener('close', (ev) =>{
+            this._update_ready_state();
             console.log(`close: ${JSON.stringify(ev)}`);
         });
     }
@@ -33,7 +35,14 @@ class WSClient{
         }));
     }
 
+    _update_ready_state() {
+        document.getElementById(
+            'div_ready_state'
+        ).innerHTML = `ready_state = ${this.ws.readyState}`;
+    }
+
     register() {
+        this._update_ready_state();
         this._msg('register');
     }
 
@@ -57,13 +66,17 @@ class WSClient{
 
     on_public_id(data) {
         this.public_id = data;
-        console.log(`this.public_id=${this.public_id}`);
+        document.getElementById(
+            'div_public_id'
+        ).innerHTML = `public_id = ${this.public_id}`;
         this.pinga();
     }
 
     on_pong(data) {
         const rtt = performance.now() - this.last_ping;
-        console.log(`rtt=${rtt.toFixed(2)}`);
+        document.getElementById(
+            'div_rtt'
+        ).innerHTML = `rtt = ${rtt.toFixed(2)}`;
     }
 }
 
@@ -76,6 +89,11 @@ window.onload = main;
 </script>
 </head>
 <body>
-<h1>Hello</h1>
+<h2>minicomms client test</h2>
+<ul>
+    <li><div id=div_ready_state>ready_state = </div></li>
+    <li><div id=div_public_id>public_id = </div></li>
+    <li><div id=div_rtt>rtt= </div></li>
+</ul>
 </body>
 </html>
