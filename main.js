@@ -97,7 +97,11 @@ const app = uWS./*SSL*/App({
     const data = JSON.parse(Buffer.from(message).toString('utf-8'));
     console.log(JSON.stringify(data));
     ws.cork(()=>{
-      ws.send("{}",false);
+      if (data.c=='register'){
+        ws.send(`{"c":"public_id","d":"test_id"}`);
+      }else if (data.c=='ping'){
+        ws.send(`{"c":"pong"}`);
+      }
     })
   },
   drain: (ws) => {
