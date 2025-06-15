@@ -27,8 +27,9 @@ function handler(req: Request) {
     socket.addEventListener("message", (event) => {
         const data = JSON.parse(event.data);
         if (data.c == "register") {
+          let public_id: string = hmacB58(data.i).substring(5,13);
           socket.send(
-            `{"c":"public_id","d":"${hmacB58(data.i).substring(5, 13)}"}`
+            `{"c":"public_id","d":"${public_id}"}`
           );
         } else if (data.c == "ping") {
           socket.send(`{"c":"pong"}`);
