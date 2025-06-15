@@ -1,0 +1,7 @@
+{
+  "tasks": {
+    "start": "deno run --allow-net --allow-read --watch=public/ main.ts",
+    "test": "deno test --allow-net --allow-read",
+    "lint": "deno lint"
+  }
+}
