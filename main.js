@@ -94,7 +94,6 @@ const app = uWS
     open: (ws) => {},
     message: (ws, message, isBinary) => {
       const data = JSON.parse(Buffer.from(message).toString("utf-8"));
-      console.log(JSON.stringify(data));
       ws.cork(() => {
         if (data.c == "register") {
           ws.send(
