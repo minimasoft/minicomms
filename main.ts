@@ -1,6 +1,7 @@
 /* Copyright (C) 2025 Esteban Torre */
 
 import * as crypto from "node:crypto";
+import * as fs from "node:fs";
 import * as bs58 from "npm:bs58@6.0.0";
 import { serveDir, serveFile } from "jsr:@std/http/file-server"
 
@@ -43,5 +44,6 @@ function handler(req: Request) {
 
   return serveFile(req, "public/index.html");
 }
-
-Deno.serve(handler);
+const cert = fs.readFileSync('keys/chain.pem').toString();
+const key = fs.readFileSync('keys/priv.pem').toString();
+Deno.serve({cert,key},handler);
