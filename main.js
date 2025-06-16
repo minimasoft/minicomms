@@ -5,7 +5,7 @@ const fs = require("fs");
 const bs58 = require("bs58");
 const uWS = require("uWebSockets.js");
 
-const port = 9009; // power level
+const port = 8000; // power level
 
 function hmacB58(data, secret = "verySecret") {
   const hmac = crypto.createHmac("sha256", secret);
@@ -73,10 +73,10 @@ function pipeStreamOverResponse(res, readStream, totalSize) {
 }
 
 const app = uWS
-  ./*SSL*/ App({
-    key_file_name: "misc/key.pem",
-    cert_file_name: "misc/cert.pem",
-    passphrase: "1234",
+  .SSLApp({
+    key_file_name: "keys/priv.pem",
+    cert_file_name: "keys/chain.pem",
+//    passphrase: "1234",
   })
   .get("/", (res, req) => {
     const fileName = "public/index.html";
